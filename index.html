@@ -1,0 +1,1596 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diario di Degustazione</title>
+  <style>
+    :root {
+      --bg: #0d0d0d;
+      --card-bg: #1a1a1a;
+      --primary: #722f37; /* Rosso Cardinale */
+      --text: #f5f5f5;
+      --text-muted: #aaaaaa;
+      --border: #332222;
+      --accent: #d4af37; /* Giallo Dorato */
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding: 15px; max-width: 800px; margin: 0 auto; padding-bottom: 90px; }
+    
+    h1 { text-align: center; color: var(--accent); margin-bottom: 4px; font-size: 1.9rem; letter-spacing: 1px; }
+    p.subtitle { text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 15px; font-style: italic; }
+    
+    /* Stile per l'icona dell'app */
+    .app-logo-container { text-align: center; margin-bottom: 20px; }
+    .app-logo { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent); box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4); background-color: #000; }
+
+    .card { background: var(--card-bg); border-radius: 12px; padding: 16px; margin-bottom: 20px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+    .card-title { color: var(--accent); font-size: 1.25rem; border-bottom: 1px solid var(--accent); padding-bottom: 8px; margin-bottom: 16px; font-weight: bold; display: flex; align-items: center; justify-content: space-between; }
+    
+    .form-group { margin-bottom: 18px; border-bottom: 1px dashed #262626; padding-bottom: 12px; }
+    .form-group:last-child { border-bottom: none; }
+    
+    .label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    label { font-weight: 600; font-size: 0.95rem; color: var(--accent); flex: 1; }
+    
+    input[type="text"], input[type="date"], select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #444; background: #242424; color: var(--text); font-size: 0.95rem; }
+    input[type="text"]:focus, input[type="date"]:focus, select:focus { border-color: var(--accent); outline: none; }
+    
+    .photo-preview { width: 100%; max-height: 250px; border-radius: 8px; object-fit: cover; display: none; margin-top: 10px; border: 2px solid var(--accent); }
+    
+    .chip-group { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .chip { position: relative; }
+    .chip input[type="checkbox"], .chip input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
+    .chip label { display: inline-block; padding: 6px 12px; background: #262626; border: 1px solid #444; border-radius: 20px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; color: var(--text); }
+    .chip input:checked + label { background: var(--accent); border-color: var(--accent); color: #000; font-weight: bold; box-shadow: 0 0 6px rgba(212, 175, 55, 0.4); }
+
+    .quick-btn-group { display: flex; gap: 6px; margin-top: 8px; }
+    .quick-btn { flex: 1; background: #222; border: 1px solid #444; color: #ccc; padding: 5px 4px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; cursor: pointer; text-align: center; transition: 0.2s; }
+    .quick-btn:hover { background: #333; color: #fff; }
+    .quick-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+    .aroma-container { margin-top: 6px; display: flex; flex-direction: column; gap: 8px; }
+    .aroma-pill-wrapper { background: #1c1c1c; border: 1px solid #333; padding: 8px 12px; border-radius: 8px; display: flex; flex-direction: column; gap: 6px; }
+    .intensity-popup { display: none; gap: 4px; align-items: center; margin-top: 4px; padding-top: 4px; border-top: 1px dashed #333; }
+    .intensity-popup.active { display: flex; }
+    .intensity-popup label { font-size: 0.75rem; padding: 4px 8px; background: #262626; border-radius: 4px; border: 1px solid #444; cursor: pointer; color: #aaa; flex: 1; text-align: center; }
+    .intensity-popup input:checked + label { background: var(--accent); color: #000; font-weight: bold; border-color: var(--accent); }
+    
+    .sub-section { background: #141414; padding: 10px; border-radius: 8px; margin-top: 8px; border: 1px dashed #443322; }
+    .sub-title { font-size: 0.85rem; color: var(--accent); margin-bottom: 6px; font-weight: bold; }
+
+    .slider-container { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+    .slider-container input[type="range"] { flex: 1; accent-color: var(--accent); height: 8px; cursor: pointer; }
+    .slider-value { background: var(--accent); color: #000; font-weight: bold; padding: 3px 8px; border-radius: 10px; font-size: 0.9rem; min-width: 38px; text-align: center; }
+    
+    .note-btn { background: #222; border: 1px solid var(--accent); color: var(--accent); font-size: 0.75rem; cursor: pointer; padding: 2px 6px; border-radius: 4px; transition: 0.2s; }
+    .note-btn:hover { background: var(--accent); color: #000; }
+    
+    .field-note { width: 100%; padding: 8px; margin-top: 6px; border-radius: 6px; border: 1px solid var(--primary); background: #14080a; color: #ffcccc; font-size: 0.9rem; font-weight: 500; display: none; }
+    .field-note.active { display: block; }
+
+    .riepilogo-cardinale { background: #22080c; border: 1px solid var(--primary); border-radius: 8px; padding: 12px; color: #ffccd5; margin-top: 12px; }
+    .riepilogo-cardinale strong { color: #ffffff; }
+    .del-aroma-btn { background: none; border: none; color: #ff6b81; cursor: pointer; font-weight: bold; margin-left: 6px; font-size: 0.9rem; }
+    .del-aroma-btn:hover { color: #ff0033; }
+
+    .btn { width: 100%; padding: 14px; border-radius: 10px; border: none; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 8px; }
+    .btn-primary { background: var(--accent); color: #000; border: 1px solid var(--accent); }
+    .btn-secondary { background: #222; color: var(--accent); border: 1px solid var(--accent); }
+    .btn-danger { background: #52151a; color: #ff9999; border: 1px solid #ff6b81; }
+    .btn-primary:active, .btn-secondary:active { opacity: 0.8; }
+    
+    .tab-nav { display: flex; gap: 10px; margin-bottom: 20px; }
+    .tab-btn { flex: 1; padding: 12px; background: #222; border: 1px solid #444; color: #fff; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; }
+    .tab-btn.active { background: var(--accent); border-color: var(--accent); color: #000; }
+    
+    .hidden { display: none; }
+    
+    .wine-item { background: #1e1e1e; border-radius: 10px; padding: 14px; margin-bottom: 12px; border-left: 4px solid var(--accent); border: 1px solid #333; }
+    .wine-header { display: flex; justify-content: space-between; align-items: flex-start; }
+    .wine-info h3 { font-size: 1.15rem; color: var(--accent); }
+    .wine-info p { font-size: 0.88rem; color: var(--text-muted); margin-top: 4px; }
+    .wine-details { margin-top: 10px; padding-top: 8px; border-top: 1px solid #333; font-size: 0.85rem; color: #ccc; }
+    .narrative-box { background: #141414; border-left: 3px solid var(--accent); padding: 10px; border-radius: 6px; margin-top: 8px; font-style: italic; color: #e2e2e2; line-height: 1.4; }
+    .archived-note { color: #ff9999; font-style: italic; margin-top: 2px; }
+    .formula-box { background: #141414; border: 1px dashed var(--accent); padding: 8px 12px; border-radius: 6px; font-size: 0.8rem; color: var(--text-muted); margin-top: 6px; margin-bottom: 8px; line-height: 1.4; }
+    
+    .search-box { position: sticky; top: 10px; z-index: 100; background: #141414; padding: 12px; border-radius: 10px; border: 1px solid var(--accent); margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.8); }
+    .actions-archive { display: flex; gap: 8px; margin-top: 12px; }
+    .actions-archive button { flex: 1; padding: 8px; font-size: 0.85rem; border-radius: 6px; font-weight: bold; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <h1>Diario di Degustazione</h1>
+  <p class="subtitle">Scheda Sommelier Digitale</p>
+  
+  <!-- LOGO / ICONA APPLICAZIONE -->
+  <div class="app-logo-container">
+    <img src="aff94d89-2a25-407b-9d7c-93aabebb4323.jfif" alt="Logo Diario Vini" class="app-logo">
+  </div>
+
+  <div class="tab-nav">
+    <button class="tab-btn active" id="tabNuova" onclick="switchTab('nuova')">➕ Nuova Scheda</button>
+    <button class="tab-btn" id="tabArchivio" onclick="switchTab('archivio')">📚 Archivio (<span id="count">0</span>)</button>
+  </div>
+
+  <!-- SEZIONE NUOVA DEGUSTAZIONE -->
+  <div id="viewNuova">
+    
+    <input type="hidden" id="editIndex" value="-1">
+
+    <!-- 1. INFO VINO, ZONA E FOTO -->
+    <div class="card">
+      <div class="card-title">1. Info Vino, Zona & Foto</div>
+
+      <div class="form-group">
+        <label>Data della Degustazione</label>
+        <input type="date" id="dataDegustazione">
+      </div>
+      
+      <div class="form-group">
+        <label>Foto Etichetta / Bottiglia (Scatta o Carica)</label>
+        <div style="display: flex; gap: 10px; margin-top: 6px;">
+          <button type="button" class="btn btn-secondary" style="margin-top:0; font-size:0.9rem; padding:10px;" onclick="document.getElementById('fotoScatto').click()">📸 Scatta Foto</button>
+          <button type="button" class="btn btn-secondary" style="margin-top:0; font-size:0.9rem; padding:10px;" onclick="document.getElementById('fotoLibreria').click()">📁 Carica da Galleria</button>
+        </div>
+        <input type="file" id="fotoScatto" accept="image/*" capture="environment" style="display:none" onchange="previewPhoto(event)">
+        <input type="file" id="fotoLibreria" accept="image/*" style="display:none" onchange="previewPhoto(event)">
+        
+        <img id="fotoPreview" class="photo-preview" alt="Anteprima Etichetta">
+      </div>
+
+      <div class="form-group">
+        <div class="label-row">
+          <label>Nome Vino</label>
+          <button type="button" class="note-btn" onclick="toggleNote('note_nomeVino')">✏️ Nota</button>
+        </div>
+        <input type="text" id="nomeVino" placeholder="Es. Barolo Cannubi">
+        <input type="text" id="note_nomeVino" class="field-note" placeholder="Inserisci nota nome...">
+      </div>
+      
+      <div class="form-group">
+        <div class="label-row">
+          <label>Cantina / Produttore</label>
+          <button type="button" class="note-btn" onclick="toggleNote('note_cantina')">✏️ Nota</button>
+        </div>
+        <input type="text" id="cantina" placeholder="Es. Marchesi di Barolo">
+        <input type="text" id="note_cantina" class="field-note" placeholder="Inserisci nota cantina...">
+      </div>
+
+      <div class="form-group">
+        <div class="label-row">
+          <label>Zona / Territorio / Denominazione</label>
+          <button type="button" class="note-btn" onclick="toggleNote('note_zona')">✏️ Nota</button>
+        </div>
+        <input type="text" id="zonaVino" placeholder="Es. Langhe, Piemonte / DOCG Barolo">
+        <input type="text" id="note_zona" class="field-note" placeholder="Inserisci nota zona...">
+      </div>
+
+      <div class="form-group">
+        <div class="label-row">
+          <label>Annata</label>
+          <button type="button" class="note-btn" onclick="toggleNote('note_annata')">✏️ Nota</button>
+        </div>
+        <input type="text" id="annata" placeholder="Es. 2018">
+        <input type="text" id="note_annata" class="field-note" placeholder="Inserisci nota annata...">
+      </div>
+
+      <div class="form-group">
+        <div class="label-row">
+          <label>Vitigno / Tipologia Uvaggio</label>
+          <button type="button" class="note-btn" onclick="toggleNote('note_vitigno')">✏️ Nota</button>
+        </div>
+        <input type="text" id="vitigno" placeholder="Es. Nebbiolo 100%">
+        
+        <div class="chip-group" style="margin-top: 8px;">
+          <div class="chip"><input type="radio" name="tipoVitigno" id="tv1" value="Monovarietale" checked onchange="toggleBlendFields()"><label for="tv1">Monovarietale</label></div>
+          <div class="chip"><input type="radio" name="tipoVitigno" id="tv2" value="Blend" onchange="toggleBlendFields()"><label for="tv2">Blend (Uvaggio)</label></div>
+        </div>
+
+        <div id="blendContainer" class="sub-section hidden" style="margin-top: 10px;">
+          <div class="sub-title">Composizione Blend (Percentuali)</div>
+          <input type="text" id="blendDettaglio" placeholder="Es. 60% Merlot, 40% Cabernet Sauvignon">
+        </div>
+
+        <input type="text" id="note_vitigno" class="field-note" placeholder="Inserisci nota vitigno...">
+      </div>
+
+      <div class="form-group">
+        <div class="label-row">
+          <label>Filosofia Produttiva</label>
+          <button type="button" class="note-btn" onclick="toggleNote('note_filosofia')">✏️ Nota</button>
+        </div>
+        <div class="chip-group">
+          <div class="chip"><input type="radio" name="filosofia" id="f1" value="Convenzionale"><label for="f1">Convenzionale</label></div>
+          <div class="chip"><input type="radio" name="filosofia" id="f2" value="Biologica"><label for="f2">Biologica</label></div>
+          <div class="chip"><input type="radio" name="filosofia" id="f3" value="Biodinamica"><label for="f3">Biodinamica</label></div>
+          <div class="chip"><input type="radio" name="filosofia" id="f4" value="Naturale"><label for="f4">Naturale</label></div>
+          <div class="chip"><input type="radio" name="filosofia" id="f5" value="Territoriale"><label for="f5">Territoriale</label></div>
+        </div>
+        <input type="text" id="note_filosofia" class="field-note" placeholder="Inserisci nota filosofia...">
+      </div>
+    </div>
+
+    <!-- 2. ESAME VISIVO -->
+    <div class="card">
+      <div class="card-title">2. Esame Visivo</div>
+
+      <div class="form-group">
+        <div class="label-row">
+          <label>Tipologia Visiva</label>
+        </div>
+        <div class="chip-group" style="margin-bottom: 10px;">
+          <div class="chip"><input type="radio" name="catColore" id="catR" value="rosso" checked onchange="renderColoreScelto(); aggiornaRuotaAromi();"><label for="catR">🔴 Vino Rosso</label></div>
+          <div class="chip"><input type="radio" name="catColore" id="catB" value="bianco" onchange="renderColoreScelto(); aggiornaRuotaAromi();"><label for="catB">🟡 Vino Bianco</label></div>
+          <div class="chip"><input type="radio" name="catColore" id="catRo" value="rosato" onchange="renderColoreScelto(); aggiornaRuotaAromi();"><label for="catRo">🌸 Vino Rosato</label></div>
+        </div>
+
+        <div class="sub-section">
+          <div class="sub-title">Tonalità Specifica</div>
+          <div class="chip-group" id="coloreGroup"></div>
+        </div>
+        
+        <input type="text" id="note_colore" class="field-note" placeholder="Inserisci nota colore...">
+      </div>
+
+      <!-- RIFLESSI UNGHIA -->
+      <div class="form-group">
+        <div class="label-row">
+          <label>Riflessi Unghia (Bordo Calice)</label>
+          <button type="button" class="note-btn" onclick="toggleNote('note_unghia')">✏️ Nota</button>
+        </div>
+        <div class="sub-section">
+          <div class="sub-title">Seleziona Riflesso Tipico</div>
+          <div class="chip-group" id="riflessiGroup"></div>
+        </div>
+        <input type="text" id="riflessiUnghia" placeholder="Es. Riflessi granato sull'unghia, trasparente..." style="margin-top:8px;">
+        <input type="text" id="note_unghia" class="field-note" placeholder="Inserisci nota riflessi unghia...">
+      </div>
+
+      <div class="form-group">
+        <div class="label-row">
+          <label>Intensità del Colore (Trasparenza) (0-10)</label>
+          <button type="button" class="note-btn" onclick="toggleNote('note_termVisivo')">✏️ Nota</button>
+        </div>
+        <div class="slider-container">
+          <input type="range" id="termVisivo" min="0" max="10" value="7" oninput="updateVal(this); updateQuickBtnState('termVisivo', 'qb_visivo')">
+          <span class="slider-value">7</span>
+        </div>
+        <div class="quick-btn-group" id="qb_visivo">
+          <button type="button" class="quick-btn" onclick="setSliderVal('termVisivo', 0, 'qb_visivo')">Assente</button>
+          <button type="button" class="quick-btn" onclick="setSliderVal('termVisivo', 2, 'qb_visivo')">Basso</button>
+          <button type="button" class="quick-btn active" onclick="setSliderVal('termVisivo', 5, 'qb_visivo')">Medio</button>
+          <button type="button" class="quick-btn" onclick="setSliderVal('termVisivo', 8, 'qb_visivo')">Alto</button>
+        </div>
+        <input type="text" id="note_termVisivo" class="field-note" placeholder="Inserisci nota intensità visiva...">
+      </div>
+
+      <div class="form-group">
+        <div class="label-row">
+          <label>Limpidezza (Prova Lettura)</label>
+          <button type="button" class="note-btn" onclick="toggleNote('note_limpidezza')">✏️ Nota</button>
+        </div>
+        <div class="chip-group">
+          <div class="chip"><input type="radio" name="limpidezza" id="l1" value="Velato"><label for="l1">Velato</label></div>
+          <div class="chip"><input type="radio" name="limpidezza" id="l2" value="Abb. Limpido"><label for="l2">Abb. Limpido</label></div>
+          <div class="chip"><input type="radio" name="limpidezza" id="l3" value="Limpido"><label for="l3">Limpido</label></div>
+          <div class="chip"><input type="radio" name="limpidezza" id="l4" value="Cristallino"><label for="l4">Cristallino</label></div>
+          <div class="chip"><input type="radio" name="limpidezza" id="l5" value="Brillante"><label for="l5">Brillante</label></div>
+        </div>
+        <input type="text" id="note_limpidezza" class="field-note" placeholder="Inserisci nota limpidezza...">
+      </div>
+
+      <div class="form-group">
+        <div class="label-row">
+          <label>Consistenza</label>
+          <button type="button" class="note-btn" onclick="toggleNote('note_consistenza')">✏️ Nota</button>
+        </div>
+        <div class="chip-group">
+          <div class="chip"><input type="radio" name="consistenza" id="c1" value="Acquoso / Basso"><label for="c1">Acquoso / Basso</label></div>
+          <div class="chip"><input type="radio" name="consistenza" id="c2" value="Ordinario / Medio"><label for="c2">Ordinario / Medio</label></div>
+          <div class="chip"><input type="radio" name="consistenza" id="c3" value="Viscoso / Alto"><label for="c3">Viscoso / Alto</label></div>
+        </div>
+        <div class="slider-container" style="margin-top: 10px;">
+          <span style="font-size: 0.85rem; color: var(--text-muted);">Termometro Consistenza (0-10):</span>
+          <input type="range" id="termConsistenza" min="0" max="10" value="5" oninput="updateVal(this); updateQuickBtnState('termConsistenza', 'qb_consistenza')">
+          <span class="slider-value">5</span>
+        </div>
+        <div class="quick-btn-group" id="qb_consistenza">
+          <button type="button" class="quick-btn" onclick="setSliderVal('termConsistenza', 0, 'qb_consistenza')">Assente</button>
+          <button type="button" class="quick-btn" onclick="setSliderVal('termConsistenza', 2, 'qb_consistenza')">Basso</button>
+          <button type="button" class="quick-btn active" onclick="setSliderVal('termConsistenza', 5, 'qb_consistenza')">Medio</button>
+          <button type="button" class="quick-btn" onclick="setSliderVal('termConsistenza', 8, 'qb_consistenza')">Alto</button>
+        </div>
+        <input type="text" id="note_consistenza" class="field-note" placeholder="Inserisci nota consistenza...">
+      </div>
+
+      <div class="form-group">
+        <div class="label-row">
+          <label>Effervescenza</label>
+          <button type="button" class="note-btn" onclick="toggleNote('note_effervescenza')">✏️ Nota</button>
+        </div>
+        
+        <div class="slider-container">
+          <span style="font-size: 0.85rem; color: var(--text-muted);">Presenza (0-10):</span>
+          <input type="range" id="termEffervescenza" min="0" max="10" value="0" oninput="updateVal(this); checkEffervescenzaDettagli(); aggiornaRuotaAromi(); updateQuickBtnState('termEffervescenza', 'qb_effervescenza')">
+          <span class="slider-value">0</span>
+        </div>
+        <div class="quick-btn-group" id="qb_effervescenza">
+          <button type="button" class="quick-btn active" onclick="setSliderVal('termEffervescenza', 0, 'qb_effervescenza')">Assente</button>
+          <button type="button" class="quick-btn" onclick="setSliderVal('termEffervescenza', 2, 'qb_effervescenza')">Basso</button>
+          <button type="button" class="quick-btn" onclick="setSliderVal('termEffervescenza', 5, 'qb_effervescenza')">Medio</button>
+          <button type="button" class="quick-btn" onclick="setSliderVal('termEffervescenza', 8, 'qb_effervescenza')">Alto</button>
+        </div>
+
+        <div id="dettagliBollaContainer" class="sub-section hidden">
+          <div class="sub-title">Dimensione Bollicine</div>
+          <div class="chip-group">
+            <div class="chip"><input type="radio" name="dimBolla" id="db1" value="Grossolana"><label for="db1">Grossolana</label></div>
+            <div class="chip"><input type="radio" name="dimBolla" id="db2" value="Media"><label for="db2">Media</label></div>
+            <div class="chip"><input type="radio" name="dimBolla" id="db3" value="Fine"><label for="db3">Fine</label></div>
+          </div>
+
+          <div class="sub-title" style="margin-top: 8px;">Numerosità</div>
+          <div class="chip-group">
+            <div class="chip"><input type="radio" name="numBolla" id="nb1" value="Scarsa"><label for="nb1">Scarsa</label></div>
+            <div class="chip"><input type="radio" name="numBolla" id="nb2" value="Abbastanza Numerosa"><label for="nb2">Abb. Numerosa</label></div>
+            <div class="chip"><input type="radio" name="numBolla" id="nb3" value="Numerosa"><label for="nb3">Numerosa</label></div>
+          </div>
+
+          <div class="sub-title" style="margin-top: 8px;">Persistenza Bollicine</div>
+          <div class="chip-group">
+            <div class="chip"><input type="radio" name="perBolla" id="pb1" value="Evanescente"><label for="pb1">Evanescente</label></div>
+            <div class="chip"><input type="radio" name="perBolla" id="pb2" value="Abbastanza Persistente"><label for="pb2">Abb. Persistente</label></div>
+            <div class="chip"><input type="radio" name="perBolla" id="pb3" value="Persistente"><label for="pb3">Persistente</label></div>
+          </div>
+        </div>
+
+        <input type="text" id="note_effervescenza" class="field-note" placeholder="Inserisci nota effervescenza...">
+      </div>
+    </div>
+
+    <!-- 3. ANALISI OLFATTIVA & AROMI -->
+    <div class="card" id="cardEsameOlfattivo">
+      <div class="card-title">3. Esame Olfattivo</div>
+
+      <div class="form-group">
+        <div class="label-row">
+          <label>Intensità Olfattiva (0-10)</label>
+          <button type="button" class="note-btn" onclick="toggleNote('note_intensita')">✏️ Nota</button>
+        </div>
+        <div class="slider-container">
+          <input type="range" id="termIntensitaOlfattiva" min="0" max="10" value="5" oninput="updateVal(this); updateQuickBtnState('termIntensitaOlfattiva', 'qb_intOlf'); calcolaCorpoAutomatico();">
+          <span class="slider-value">5</span>
+        </div>
+        <div class="quick-btn-group" id="qb_intOlf">
+          <button type="button" class="quick-btn" onclick="setSliderVal('termIntensitaOlfattiva', 0, 'qb_intOlf')">Assente</button>
+          <button type="button" class="quick-btn" onclick="setSliderVal('termIntensitaOlfattiva', 2, 'qb_intOlf')">Basso</button>
+          <button type="button" class="quick-btn active" onclick="setSliderVal('termIntensitaOlfattiva', 5, 'qb_intOlf')">Medio</button>
+          <button type="button" class="quick-btn" onclick="setSliderVal('termIntensitaOlfattiva', 8, 'qb_intOlf')">Alto</button>
+        </div>
+        <input type="text" id="note_intensita" class="field-note" placeholder="Inserisci nota intensità olfattiva...">
+      </div>
+
+      <div class="form-group">
+        <div class="label-row">
+          <label>Aromi & Profumi</label>
+          <button type="button" class="note-btn" onclick="toggleNote('note_aromi')">✏️ Nota</button>
+        </div>
+        
+        <div id="macroAromiContainer" class="chip-group" style="margin-bottom: 10px;"></div>
+        <div id="activeCategoryBox"></div>
+        
+        <div id="riepilogoAromi"></div>
+
+        <input type="text" id="note_aromi" class="field-note" placeholder="Inserisci nota aromi...">
+      </div>
+    </div>
+
+    <!-- 4. ANALISI GUSTATIVA -->
+    <div class="card">
+      <div class="card-title">4. Esame Gustativo</div>
+
+      <div class="form-group hidden" id="groupPalatoBolla">
+        <div class="label-row">
+          <label>Sensazione Effervescenza al Palato</label>
+          <button type="button" class="note-btn" onclick="toggleNote('note_palatoBolla')">✏️ Nota</button>
+        </div>
+        <div class="chip-group">
+          <div class="chip"><input type="radio" name="palatoBolla" id="pbol1" value="Pungente"><label for="pbol1">Pungente</label></div>
+          <div class="chip"><input type="radio" name="palatoBolla" id="pbol2" value="Vivace"><label for="pbol2">Vivace</label></div>
+          <div class="chip"><input type="radio" name="palatoBolla" id="pbol3" value="Cremosa / Seta"><label for="pbol3">Cremosa / Seta</label></div>
+        </div>
+        <input type="text" id="note_palatoBolla" class="field-note" placeholder="Inserisci nota sensazione bollicine in bocca...">
+      </div>
+
+      <!-- 1. Dolcezza -->
+      <div class="form-group">
+        <div class="label-row">
+          <label>Dolcezza (Dolce / Secco) (0-10)</label>
+          <button type="button" class="note-btn" onclick="toggleNote('note_dolcezza')">✏️ Nota</button>
+        </div>
+        <div class="slider-container">
+          <input type="range" id="termDolcezza" min="0" max="10" value="2" oninput="updateVal(this); updateQuickBtnState('termDolcezza', 'qb_dolcezza')">
+          <span class="slider-value">2</span>
+        </div>
+        <div class="quick-btn-group" id="qb_dolcezza">
+          <button type="button" class="quick-btn" onclick="setSliderVal('termDolcezza', 0, 'qb_dolcezza')">Assente</button>
+          <button type="button" class="quick-btn active" onclick="setSliderVal('termDolcezza', 2, 'qb_dolcezza')">Basso</button>
+          <button type="button" class="quick-btn" onclick="setSliderVal('termDolcezza', 5, 'qb_dolcezza')">Medio</button>
+          <button type="button" class="quick-btn" onclick="setSliderVal('termDolcezza', 8, 'qb_dolcezza')">Alto</button>
+        </div>
+        <input type="text" id="note_dolcezza" class="field-note" placeholder="Inserisci nota dolcezza...">
+      </div>
+
+      <!-- 2. Acidità -->
+      <div class="form-group">
+        <div class="label-row">
+          <label>Acidità / Salivazione (0-10) [Correttore Bilanciato]</label>
+          <button type="button" class="note-btn" onclick="toggleNote('note_acidita')">✏️ Nota</button>
+        </div>
+        <div class="slider-container">
+          <input type="range" id="termAcidita" min="0" max="10" value="6" oninput="updateVal(this); updateQuickBtnState('termAcidita', 'qb_acidita'); calcolaCorpoAutomatico();">
+          <span class="slider-value">6</span>
+        </div>
+        <div class="quick-btn-group" id="qb_acidita">
+          <button type="button" class="quick-btn" onclick="setSliderVal('termAcidita', 0, 'qb_acidita')">Assente</button>
+          <button type="button" class="quick-btn" onclick="setSliderVal('termAcidita', 2, 'qb_acidita')">Basso</button>
+          <button type="button" class="quick-btn" onclick="setSliderVal('termAcidita', 5, 'qb_acidita')">Medio</button>
+          <button type="button" class="quick-btn active" onclick="setSliderVal('termAcidita', 8, 'qb_acidita')">Alto</button>
+        </div>
+        <input type="text" id="note_acidita" class="field-note" placeholder="Inserisci nota acidità...">
+      </div>
+
+      <!-- 3. Sapidità -->
+      <div class="form-group">
+        <div class="label-row">
+          <label>Sapidità / Mineralità (0-10)</label>
+          <button type="button" class="note-btn" onclick="toggleNote('note_sapidita')">✏️ Nota</button>
+        </div>
+        <div class="slider-container">
+          <input type="range" id="termSapidita" min="0" max="10" value="5" oninput="updateVal(this); updateQuickBtnState('termSapidita', 'qb_sapidita')">
+          <span class="slider-value">5</span>
+        </div>
+        <div class="quick-btn-group" id="qb_sapidita">
+          <button type="button" class="quick-btn" onclick="setSliderVal('termSapidita', 0, 'qb_sapidita')">Assente</button>
+          <button type="button" class="quick-btn" onclick="setSliderVal('termSapidita', 2, 'qb_sapidita')">Basso</button>
+          <button type="button" class="quick-btn active" onclick="setSliderVal('termSapidita', 5, 'qb_sapidita')">Medio</button>
+          <button type="button" class="quick-btn" onclick="setSliderVal('termSapidita', 8, 'qb_sapidita')">Alto</button>
+        </div>
+        <input type="text" id="note_sapidita" class="field-note" placeholder="Inserisci nota sapidità...">
+      </div>
+
+      <!-- 4. Alcol -->
+      <div class="form-group">
+        <div class="label-row">
+          <label>Alcol (0-10)</label>
+          <button type="button" class="note-btn" onclick="toggleNote('note_alcol')">✏️ Nota</button>
+        </div>
+        <div class="slider-container">
+          <input type="range" id="termAlcol" min="0" max="10" value="6" oninput="updateVal(this); updateQuickBtnState('termAlcol', 'qb_alcol'); calcolaCorpoAutomatico();">
+          <span class="slider-value">6</span>
+        </div>
+        <div class="quick-btn-group" id="qb_alcol">
+          <button type="button" class="quick-btn" onclick="setSliderVal('termAlcol', 0, 'qb_alcol')">Assente</button>
+          <button type="button" class="quick-btn" onclick="setSliderVal('termAlcol', 2, 'qb_alcol')">Basso</button>
+          <button type="button" class="quick-btn" onclick="setSliderVal('termAlcol', 5, 'qb_alcol')">Medio</button>
+          <button type="button" class="quick-btn active" onclick="setSliderVal('termAlcol', 8, 'qb_alcol')">Alto</button>
+        </div>
+        <input type="text" id="note_alcol" class="field-note" placeholder="Inserisci nota alcol...">
+      </div>
+
+      <!-- 5. Tannino -->
+      <div class="form-group" id="tanninoBlock">
+        <div class="label-row">
+          <label>Tannino (0-10)</label>
+          <button type="button" class="note-btn" onclick="toggleNote('note_tannino')">✏️ Nota</button>
+        </div>
+        <div class="slider-container">
+          <input type="range" id="termTannino" min="0" max="10" value="5" oninput="updateVal(this); updateQuickBtnState('termTannino', 'qb_tannino'); calcolaCorpoAutomatico();">
+          <span class="slider-value">5</span>
+        </div>
+        <div class="quick-btn-group" id="qb_tannino">
+          <button type="button" class="quick-btn" onclick="setSliderVal('termTannino', 0, 'qb_tannino')">Assente</button>
+          <button type="button" class="quick-btn" onclick="setSliderVal('termTannino', 2, 'qb_tannino')">Basso</button>
+          <button type="button" class="quick-btn active" onclick="setSliderVal('termTannino', 5, 'qb_tannino')">Medio</button>
+          <button type="button" class="quick-btn" onclick="setSliderVal('termTannino', 8, 'qb_tannino')">Alto</button>
+        </div>
+        <input type="text" id="note_tannino" class="field-note" placeholder="Inserisci nota tannino...">
+      </div>
+
+      <!-- 6. Amaro -->
+      <div class="form-group">
+        <div class="label-row">
+          <label>Amaro / Nota Amarognola (0-10)</label>
+          <button type="button" class="note-btn" onclick="toggleNote('note_amaro')">✏️ Nota</button>
+        </div>
+        <div class="slider-container">
+          <input type="range" id="termAmaro" min="0" max="10" value="0" oninput="updateVal(this); updateQuickBtnState('termAmaro', 'qb_amaro')">
+          <span class="slider-value">0</span>
+        </div>
+        <div class="quick-btn-group" id="qb_amaro">
+          <button type="button" class="quick-btn active" onclick="setSliderVal('termAmaro', 0, 'qb_amaro')">Assente</button>
+          <button type="button" class="quick-btn" onclick="setSliderVal('termAmaro', 2, 'qb_amaro')">Basso</button>
+          <button type="button" class="quick-btn" onclick="setSliderVal('termAmaro', 5, 'qb_amaro')">Medio</button>
+          <button type="button" class="quick-btn" onclick="setSliderVal('termAmaro', 8, 'qb_amaro')">Alto</button>
+        </div>
+        <input type="text" id="note_amaro" class="field-note" placeholder="Inserisci nota amaro...">
+      </div>
+
+      <!-- 7. Persistenza Gustativa (PAI) -->
+      <div class="form-group">
+        <div class="label-row">
+          <label>Persistenza Gustativa (PAI) (0-10)</label>
+          <button type="button" class="note-btn" onclick="toggleNote('note_persistenza')">✏️ Nota</button>
+        </div>
+        <div class="slider-container">
+          <input type="range" id="termPersistenza" min="0" max="10" value="5" oninput="updateVal(this); updateQuickBtnState('termPersistenza', 'qb_pers'); calcolaCorpoAutomatico();">
+          <span class="slider-value">5</span>
+        </div>
+        <div class="quick-btn-group" id="qb_pers">
+          <button type="button" class="quick-btn" onclick="setSliderVal('termPersistenza', 0, 'qb_pers')">Assente</button>
+          <button type="button" class="quick-btn" onclick="setSliderVal('termPersistenza', 2, 'qb_pers')">Basso</button>
+          <button type="button" class="quick-btn active" onclick="setSliderVal('termPersistenza', 5, 'qb_pers')">Medio</button>
+          <button type="button" class="quick-btn" onclick="setSliderVal('termPersistenza', 9, 'qb_pers')">Alto</button>
+        </div>
+        <input type="text" id="note_persistenza" class="field-note" placeholder="Inserisci nota persistenza...">
+      </div>
+
+      <!-- 8. Corpo / Struttura -->
+      <div class="form-group">
+        <div class="label-row">
+          <label>Corpo / Struttura (Termometro 0-10)</label>
+          <button type="button" class="note-btn" onclick="toggleNote('note_corpo')">✏️ Nota</button>
+        </div>
+        <div class="formula-box" id="formulaCorpoBox">
+          ⏳ Calcolo automatico in corso...
+        </div>
+        <div class="slider-container" style="margin-top: 8px;">
+          <input type="range" id="termCorpo" min="0" max="10" value="5" oninput="updateVal(this); updateQuickBtnState('termCorpo', 'qb_corpo')">
+          <span class="slider-value">5</span>
+        </div>
+        <div class="quick-btn-group" id="qb_corpo">
+          <button type="button" class="quick-btn" onclick="setSliderVal('termCorpo', 2, 'qb_corpo')">Assente</button>
+          <button type="button" class="quick-btn" onclick="setSliderVal('termCorpo', 3, 'qb_corpo')">Basso</button>
+          <button type="button" class="quick-btn active" onclick="setSliderVal('termCorpo', 5, 'qb_corpo')">Medio</button>
+          <button type="button" class="quick-btn" onclick="setSliderVal('termCorpo', 9, 'qb_corpo')">Alto</button>
+        </div>
+        <input type="text" id="note_corpo" class="field-note" placeholder="Inserisci nota corpo...">
+      </div>
+
+      <!-- 9. RETROGUSTO (COERENTE CON X DI ELIMINAZIONE / INCOERENTE MULTIPLO) -->
+      <div class="form-group">
+        <div class="label-row">
+          <label>Retrogusto</label>
+        </div>
+        <div class="chip-group">
+          <div class="chip"><input type="radio" name="tipoRetrogusto" id="rg1" value="Coerente" checked onchange="toggleRetrogustoDettaglio()"><label for="rg1">🟢 Coerente</label></div>
+          <div class="chip"><input type="radio" name="tipoRetrogusto" id="rg2" value="Incoerente" onchange="toggleRetrogustoDettaglio()"><label for="rg2">🟡 Incoerente</label></div>
+        </div>
+        
+        <div id="retrogustoCoerenteBox" class="sub-section" style="margin-top:8px;">
+          <div class="sub-title">Profumi rilevati al naso (clicca ❌ per rimuovere quelli che non senti più in bocca):</div>
+          <div id="retrogustoAromiList" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;"></div>
+          
+          <div class="sub-title">Aggiungi altro (scrivine uno e ne apparirà un altro):</div>
+          <div id="retrogustoAltroContainer" style="display:flex; flex-direction:column; gap:6px;">
+            <input type="text" class="field-note active retro-altro-input" placeholder="✍️ Aggiungi altro al retrogusto..." oninput="checkRetroAltroInputs()" style="margin-top:0;">
+          </div>
+        </div>
+
+        <div id="retrogustoIncoerenteBox" class="sub-section hidden" style="margin-top:8px;">
+          <div class="sub-title">Nuove note / profumi non avvertiti al naso (aggiungine quanti ne vuoi):</div>
+          <div id="incoerenteListContainer" style="display:flex; flex-direction:column; gap:6px; margin-bottom:6px;">
+            <input type="text" class="field-note active incoerente-input" placeholder="✍️ Scrivi nuovo profumo/gusto..." oninput="checkIncoerenteInputs()" style="margin-top:0;">
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 5. GIUDIZIO FINALE -->
+    <div class="card">
+      <div class="card-title">5. Giudizio Finale</div>
+
+      <div class="form-group">
+        <div class="label-row">
+          <label>Equilibrio</label>
+          <button type="button" class="note-btn" onclick="toggleNote('note_equilibrio')">✏️ Nota</button>
+        </div>
+        <div class="chip-group">
+          <div class="chip"><input type="radio" name="equilibrio" id="eq1" value="Poco Equilibrato"><label for="eq1">Poco Eq.</label></div>
+          <div class="chip"><input type="radio" name="equilibrio" id="eq2" value="Abbastanza Equilibrato"><label for="eq2">Abb. Eq.</label></div>
+          <div class="chip"><input type="radio" name="equilibrio" id="eq3" value="Equilibrato"><label for="eq3">Equilibrato</label></div>
+        </div>
+        <input type="text" id="note_equilibrio" class="field-note" placeholder="Inserisci nota equilibrio...">
+      </div>
+
+      <div class="form-group">
+        <div class="label-row">
+          <label>Stato Evolutivo</label>
+          <button type="button" class="note-btn" onclick="toggleNote('note_stato')">✏️ Nota</button>
+        </div>
+        <div class="chip-group">
+          <div class="chip"><input type="radio" name="stato" id="st1" value="Giovane" checked><label for="st1">Giovane</label></div>
+          <div class="chip"><input type="radio" name="stato" id="st2" value="Pronto"><label for="st2">Pronto</label></div>
+          <div class="chip"><input type="radio" name="stato" id="st3" value="Maturo"><label for="st3">Maturo</label></div>
+          <div class="chip"><input type="radio" name="stato" id="st4" value="Vecchio"><label for="st4">Vecchio</label></div>
+        </div>
+        <input type="text" id="note_stato" class="field-note" placeholder="Inserisci nota stato evolutivo...">
+      </div>
+
+      <div class="form-group">
+        <label>Voto Complessivo (1-10)</label>
+        <div class="slider-container">
+          <input type="range" id="votoFinale" min="1" max="10" value="8" oninput="updateVal(this); updateQuickBtnState('votoFinale', 'qb_voto')">
+          <span class="slider-value">8</span>
+        </div>
+        <div class="quick-btn-group" id="qb_voto">
+          <button type="button" class="quick-btn" onclick="setSliderVal('votoFinale', 0, 'qb_voto')">Assente</button>
+          <button type="button" class="quick-btn" onclick="setSliderVal('votoFinale', 2, 'qb_voto')">Basso</button>
+          <button type="button" class="quick-btn active" onclick="setSliderVal('votoFinale', 5, 'qb_voto')">Medio</button>
+          <button type="button" class="quick-btn" onclick="setSliderVal('votoFinale', 8, 'qb_voto')">Alto</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="label-row">
+          <label>Abbinamento Cibo Consigliato</label>
+          <button type="button" class="note-btn" onclick="toggleNote('note_abbinamento')">✏️ Nota</button>
+        </div>
+        <input type="text" id="note_abbinamento" class="field-note active" placeholder="🍽️ Inserisci abbinamento...">
+      </div>
+      
+      <button class="btn btn-primary" onclick="salvaDegustazione()">💾 SALVA NEL DIARIO</button>
+      <button class="btn btn-secondary" onclick="esportaPDF()">📄 ESPORTA IN PDF</button>
+      <button class="btn btn-secondary" onclick="condividiScheda()">📤 CONDIVIDI</button>
+    </div>
+
+  </div>
+
+  <!-- SEZIONE ARCHIVIO -->
+  <div id="viewArchivio" class="hidden">
+    <div class="search-box">
+      <input type="text" id="searchArchivio" placeholder="🔍 Cerca per Nome, Vitigno, Zona, Tipologia, Data..." oninput="caricaArchivio()">
+      
+      <!-- Pulsanti di Sincronizzazione Google Drive -->
+      <div style="display: flex; gap: 8px; margin-top: 10px;">
+        <button class="btn btn-primary" style="margin-top:0; font-size:0.85rem; padding:8px;" onclick="salvaInGoogleDrive()">☁️ Salva in Google Drive</button>
+        <button class="btn btn-secondary" style="margin-top:0; font-size:0.85rem; padding:8px;" onclick="document.getElementById('importFile').click()">📱 Importa Backup</button>
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importaBackupCloud(event)">
+      </div>
+    </div>
+    <div id="listaDegustazioni"></div>
+  </div>
+
+  <script>
+    let photoData = "";
+    let aromiConfermati = [];
+    let categoriaAttivaCorrente = null;
+
+    // CLASSIFICAZIONE COLORI E RIFLESSI DETTAGLIATA
+    const coloriPerScelta = {
+      rosso: ["Rosso Violaceo", "Rosso Rubino", "Rosso Granato"],
+      bianco: ["Giallo Verdolino", "Giallo Paglierino", "Giallo Dorato"],
+      rosato: [
+        "Rosato Buccia di Cipolla / Ocra Antico (Provenzale evoluto)",
+        "Rosato Petalo di Rosa / Buccia di Pesca (Provenzale classico)",
+        "Rosato Salmone / Corallo",
+        "Rosato Cerasuolo / Lampone"
+      ]
+    };
+
+    const riflessiPerScelta = {
+      rosso: ["Violacei", "Rubino", "Granato", "Aranciati / Mattone"],
+      bianco: ["Verdolini", "Dorati", "Ambrati"],
+      rosato: ["Rame", "Ocra", "Salmone", "Cerasuolo", "Viola tenue"]
+    };
+
+    const ruotaViniRossi = {
+      "Fruttato": {
+        "Agrumi": ["Pompelmo", "Arancia", "Arancia sanguinella"],
+        "Frutta d'albero": ["Mela cotta", "Pesca sciroppata", "Cachi"],
+        "Frutta tropicale": ["Frutto della passione", "Banana"],
+        "Frutta rossa": ["Ciliegia", "Fragola", "Lampone", "Amarena", "Prugna"],
+        "Frutta nera": ["Mora", "Mirtillo", "Ribes nero", "Uva fragola (vinoso)", "Cassis", "Melograno"],
+        "Frutta secca": ["Uva passa", "Fichi", "Datteri", "Prugna secca"]
+      },
+      "Floreale": {
+        "Fiori": ["Iris", "Violetta", "Rosa", "Lavanda", "Fiori di campo", "Geranio"],
+        "Fiori secchi": ["Rosa appassita", "Pout-pourri"]
+      },
+      "Speziato": {
+        "Spezie varie": ["Cannella", "Liquirizia", "Chiodi di garofano", "Anice", "Noce moscata", "Pepe bianco", "Pepe nero", "Vaniglia"],
+        "Noce d'albero": ["Noce", "Mandorla"]
+      },
+      "Tostato": {
+        "Cacao": ["Cacao amaro", "Cioccolato", "Carrube"],
+        "Tabacco": ["Tè nero", "Tè verde", "Foglie di tabacco", "Sigaro", "Fumè", "Cenere"]
+      },
+      "Note Verdi": {
+        "Erbe aromatiche": ["Eucalipto", "Rosmarino", "Timo", "Salvia", "Menta", "Origano", "Maggiorana"]
+      },
+      "Verdure": {
+        "Verdure e sottobosco": ["Fieno", "Macchia mediterranea", "Muschio", "Sottobosco", "Pino", "Foglia di pomodoro", "Peperone verde", "Peperone"]
+      },
+      "Terroso": {
+        "Terroso": ["Argilla", "Terra cotta", "Polvere", "Terriccio", "Funghi", "Tartufo"]
+      },
+      "Minerale": {
+        "Minerale": ["Grafite", "Catrame", "Gesso", "Pietra vulcanica", "Pietra bagnata"]
+      },
+      "Animale": {
+        "Animale": ["Cuoio", "Pelletteria"]
+      },
+      "Altro (Difetti / Puzze)": {
+        "Pungente": ["Aceto di vino"],
+        "Fermentazione": ["Yogurt", "Panna", "Burro"],
+        "Ossidato": ["Madeira", "Mela passata"],
+        "Ridotto": ["Cassetto chiuso"],
+        "TCA a tappo": ["Muffa", "Cane bagnato"],
+        "Solfiti": ["Mais", "Cipolla", "Aglio", "Gomma bruciata"]
+      }
+    };
+
+    const ruotaViniBianchi = {
+      "Fruttato": {
+        "Agrumi": ["Lime", "Limone", "Scorza di limone", "Limone candito", "Cedro", "Bergamotto", "Mandarino", "Scorza d'arancio", "Confezioni / Confetture", "Pompelmo rosa", "Pompelmo giallo"],
+        "Frutti da albero": ["Pera", "Mela", "Albicocca", "Pesca", "Prugna", "Mela cotogna", "Pesca bianca", "Mela rosa", "Cachi", "Susina"],
+        "Frutta tropicale": ["Ananas", "Mango", "Papaya", "Guava", "Kiwi", "Banana", "Lychee", "Melone", "Melone bianco", "Frutto della passione", "Uva spina"],
+        "Frutta secca": ["Mandorla", "Noce", "Nocciola", "Albicocca disidratata", "Mela cotta"],
+        "Dolce": ["Miele", "Vaniglia", "Caramello"]
+      },
+      "Botritizzato": {
+        "Botritizzato": ["Albicocca", "Scorza di arancia", "Miele"]
+      },
+      "Speziato": {
+        "Speziato": ["Anice", "Cannella", "Zafferano", "Pepe bianco", "Vaniglia"]
+      },
+      "Fermentazione": {
+        "Lattoso (Malolattica)": ["Latte", "Crema", "Burro"],
+        "Lievito": ["Lievito di birra", "Crostata", "Pane", "Crossaint", "Biscotto", "Crema pasticcera"]
+      },
+      "Erbaceo": {
+        "Verdure": ["Finocchio", "Foglia di pomodoro", "Asparago", "Sedano", "Peperone verde", "Erba tagliata"],
+        "Erba Aromatiche": ["Timo", "Erbette", "Erba cipollina", "Basilico", "Alloro"],
+        "Tè": ["Tè verde"]
+      },
+      "Minerale": {
+        "Minerale": ["Petrolio", "Pietra focaia", "Iodio", "Pietra bagnata", "Roccia vulcanica", "Zolfo", "Gesso"]
+      },
+      "Terroso": {
+        "Terroso": ["Tartufo bianco"]
+      },
+      "Floreale": {
+        "Fiori": ["Camomilla", "Fiori d'arancio", "Gelsomino", "Rosa", "Violetta", "Geranio", "Biancospino", "Acacia", "Fiori di campo", "Lavanda"],
+        "Fiori secchi": ["Pout pourri", "Acqua di rosa"],
+        "Profumato": ["Fumè", "Olive in salamoia"]
+      },
+      "Altro (Difetti / Puzze)": {
+        "Brett": ["Sudore di cavallo"],
+        "Solfiti": ["Cipolla", "Mais", "Gomma"],
+        "Agenti chimici": ["Saponetta"],
+        "Pungente": ["Aceto di vino"],
+        "Ossidato": ["Madeira", "Mela passata"],
+        "Ridotto": ["Cassetto chiuso"],
+        "TCA (Tappo)": ["Muffa", "Odore di chiuso"]
+      }
+    };
+
+    const ruotaSpumanti = {
+      "Fruttato Spumanti": {
+        "Frutti di Bosco": ["Ciliegia", "Mirtillo", "More", "Lampone", "Fragoline selvatiche"],
+        "Frutta Candita": ["Ciliegia candita", "Scorza di arancio", "Dattero", "Fico caramellato", "Albicocca disidratata", "Uva passa", "Limone candito", "Composta di frutti di bosco"],
+        "Caramellizzati & Dolce": ["Caramello", "Caramello mou", "Cotognata", "Vaniglia", "Cocco", "Cera d'api", "Pasticceria"]
+      },
+      "Minerali & Fermentazione Spumanti": {
+        "Minerali Spumanti": ["Ferro", "Gesso", "Pietra bagnata", "Gusci di ostriche", "Salmastro"],
+        "Tostato Spumanti": ["Pane tostato", "Affumicato", "Caffè", "Cacao", "Foglie di tabacco", "Sigaro"],
+        "Malolattica Spumanti": ["Latte", "Crema di latte", "Burro", "Lievito di birra", "Mollica di pane", "Pane bianco", "Brioches", "Biscotto", "Crema pasticcera"]
+      }
+    };
+
+    function updateVal(el) {
+      el.nextElementSibling.innerText = el.value;
+    }
+
+    function setSliderVal(sliderId, targetVal, groupContainerId) {
+      const slider = document.getElementById(sliderId);
+      slider.value = targetVal;
+      slider.nextElementSibling.innerText = targetVal;
+      
+      const group = document.getElementById(groupContainerId);
+      if(!group) return;
+      group.querySelectorAll('.quick-btn').forEach(b => b.classList.remove('active'));
+      
+      let btnIdx = 0;
+      if (targetVal === 0) btnIdx = 0;
+      else if (targetVal >= 1 && targetVal <= 3) btnIdx = 1;
+      else if (targetVal >= 4 && targetVal <= 7) btnIdx = 2;
+      else if (targetVal > 7) btnIdx = 3;
+      
+      if(group.querySelectorAll('.quick-btn')[btnIdx]) {
+        group.querySelectorAll('.quick-btn')[btnIdx].classList.add('active');
+      }
+
+      if(sliderId === 'termEffervescenza') {
+        checkEffervescenzaDettagli();
+        aggiornaRuotaAromi();
+      }
+
+      if(sliderId !== 'termCorpo') {
+        calcolaCorpoAutomatico();
+      }
+    }
+
+    function updateQuickBtnState(sliderId, groupContainerId) {
+      const val = parseInt(document.getElementById(sliderId).value);
+      const group = document.getElementById(groupContainerId);
+      if(!group) return;
+      
+      group.querySelectorAll('.quick-btn').forEach(b => b.classList.remove('active'));
+      let btnIdx = 0;
+      if (val === 0) btnIdx = 0;
+      else if (val >= 1 && val <= 3) btnIdx = 1;
+      else if (val >= 4 && val <= 7) btnIdx = 2;
+      else if (val > 7) btnIdx = 3;
+
+      if(group.querySelectorAll('.quick-btn')[btnIdx]) {
+        group.querySelectorAll('.quick-btn')[btnIdx].classList.add('active');
+      }
+    }
+
+    function calcolaCorpoAutomatico() {
+      const alcol = parseInt(document.getElementById('termAlcol').value) || 0;
+      const tannino = parseInt(document.getElementById('termTannino').value) || 0;
+      const intensitaOlf = parseInt(document.getElementById('termIntensitaOlfattiva').value) || 0;
+      const persistenzaGus = parseInt(document.getElementById('termPersistenza').value) || 0;
+      const acidita = parseInt(document.getElementById('termAcidita').value) || 0;
+
+      const mediaAromatica = (intensitaOlf + persistenzaGus) / 2;
+      const baseStruttura = (alcol + tannino + mediaAromatica) / 3;
+      const correzioneAcidita = (5 - acidita) * 0.2;
+
+      let valoreCalcolato = Math.min(10, Math.max(0, baseStruttura + correzioneAcidita));
+
+      document.getElementById('formulaCorpoBox').innerHTML = `
+        📊 <strong>Calcolo Ponderato su scala 0-10:</strong><br>
+        • Media 3 elementi (Alcol ${alcol}, Tannino ${tannino}, Aromi ${mediaAromatica.toFixed(1)}): <strong>${baseStruttura.toFixed(1)}</strong><br>
+        • Correzione Acidità (${acidita}/10): <strong>${correzioneAcidita > 0 ? '+' : ''}${correzioneAcidita.toFixed(1)}</strong><br>
+        ➡️ <em>Risultato Corpo Consigliato:</em> <strong>${valoreCalcolato.toFixed(1)} / 10</strong>
+      `;
+
+      setSliderVal('termCorpo', Math.round(valoreCalcolato), 'qb_corpo');
+    }
+
+    function toggleRetrogustoDettaglio() {
+      const isIncoerente = document.getElementById('rg2').checked;
+      const boxCoerente = document.getElementById('retrogustoCoerenteBox');
+      const boxIncoerente = document.getElementById('retrogustoIncoerenteBox');
+      
+      if(isIncoerente) {
+        boxCoerente.classList.add('hidden');
+        boxIncoerente.classList.remove('hidden');
+      } else {
+        boxCoerente.classList.remove('hidden');
+        boxIncoerente.classList.add('hidden');
+      }
+    }
+
+    function aggiornaRetrogustoCoerenteLista() {
+      const container = document.getElementById('retrogustoAromiList');
+      container.innerHTML = '';
+      if(aromiConfermati.length === 0) {
+        container.innerHTML = '<span style="font-size:0.8rem; color:#888; font-style:italic;">Nessun profumo registrato all’olfatto.</span>';
+        return;
+      }
+      aromiConfermati.forEach(a => {
+        container.innerHTML += `
+          <div class="chip" style="display:inline-block; margin-bottom:4px;">
+            <span style="display:inline-block; padding:6px 12px; background:#222; border:1px solid var(--accent); border-radius:15px; font-size:0.85rem; color:#fff; font-weight:500;">
+              ${a.nome} 
+              <button type="button" onclick="rimuoviAromaRetrogusto('${a.nome}')" style="background:none; border:none; color:#ff6b81; cursor:pointer; font-weight:bold; margin-left:6px; font-size:1rem;">❌</button>
+            </span>
+          </div>
+        `;
+      });
+    }
+
+    function rimuoviAromaRetrogusto(nomeAroma) {
+      aromiConfermati = aromiConfermati.filter(a => a.nome !== nomeAroma);
+      aggiornaRiepilogoAromi();
+      aggiornaRetrogustoCoerenteLista();
+    }
+
+    function checkRetroAltroInputs() {
+      const container = document.getElementById('retrogustoAltroContainer');
+      const rows = container.querySelectorAll('.retro-altro-input');
+      const lastRow = rows[rows.length - 1];
+      if(lastRow && lastRow.value.trim() !== '' && rows.length < 10) {
+        const newInp = document.createElement('input');
+        newInp.type = 'text';
+        newInp.className = 'field-note active retro-altro-input';
+        newInp.placeholder = '✍️ Aggiungi altro al retrogusto...';
+        newInp.oninput = checkRetroAltroInputs;
+        newInp.style.marginTop = '0';
+        container.appendChild(newInp);
+      }
+    }
+
+    let incoerenteRowIdx = 1;
+    function checkIncoerenteInputs() {
+      const container = document.getElementById('incoerenteListContainer');
+      const rows = container.querySelectorAll('.incoerente-input');
+      const lastRow = rows[rows.length - 1];
+      if(lastRow && lastRow.value.trim() !== '' && rows.length < 10) {
+        incoerenteRowIdx++;
+        const newInp = document.createElement('input');
+        newInp.type = 'text';
+        newInp.className = 'field-note active incoerente-input';
+        newInp.placeholder = '✍️ Scrivi nuovo profumo/gusto...';
+        newInp.oninput = checkIncoerenteInputs;
+        newInp.style.marginTop = '0';
+        container.appendChild(newInp);
+      }
+    }
+
+    function toggleNote(id) {
+      const el = document.getElementById(id);
+      if (el.classList.contains('active')) el.classList.remove('active');
+      else { el.classList.add('active'); el.focus(); }
+    }
+
+    function toggleBlendFields() {
+      const isBlend = document.getElementById('tv2').checked;
+      const blendContainer = document.getElementById('blendContainer');
+      if (isBlend) blendContainer.classList.remove('hidden');
+      else blendContainer.classList.add('hidden');
+    }
+
+    function checkEffervescenzaDettagli() {
+      const val = parseInt(document.getElementById('termEffervescenza').value);
+      const container = document.getElementById('dettagliBollaContainer');
+      const palatoGroup = document.getElementById('groupPalatoBolla');
+
+      if(val > 0) {
+        container.classList.remove('hidden');
+        palatoGroup.classList.remove('hidden');
+      } else {
+        container.classList.add('hidden');
+        palatoGroup.classList.add('hidden');
+      }
+    }
+
+    function switchTab(tab) {
+      if(tab === 'nuova') {
+        document.getElementById('viewNuova').classList.remove('hidden');
+        document.getElementById('viewArchivio').classList.add('hidden');
+        document.getElementById('tabNuova').classList.add('active');
+        document.getElementById('tabArchivio').classList.remove('active');
+      } else {
+        document.getElementById('viewNuova').classList.add('hidden');
+        document.getElementById('viewArchivio').classList.remove('hidden');
+        document.getElementById('tabNuova').classList.remove('active');
+        document.getElementById('tabArchivio').classList.add('active');
+        caricaArchivio();
+      }
+    }
+
+    function previewPhoto(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          photoData = e.target.result;
+          const img = document.getElementById('fotoPreview');
+          img.src = photoData;
+          img.style.display = 'block';
+        }
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function renderColoreScelto() {
+      const catEl = document.querySelector('input[name="catColore"]:checked');
+      const categoria = catEl ? catEl.value : 'rosso';
+      
+      const colContainer = document.getElementById('coloreGroup');
+      colContainer.innerHTML = '';
+      coloriPerScelta[categoria].forEach((col, idx) => {
+        colContainer.innerHTML += `
+          <div class="chip">
+            <input type="radio" name="coloreScelto" id="col_${idx}" value="${col}">
+            <label for="col_${idx}">${col}</label>
+          </div>
+        `;
+      });
+
+      const rifContainer = document.getElementById('riflessiGroup');
+      rifContainer.innerHTML = '';
+      riflessiPerScelta[categoria].forEach((rif, idx) => {
+        rifContainer.innerHTML += `
+          <div class="chip">
+            <input type="radio" name="riflessoSelezionato" id="rif_${idx}" value="${rif}" onchange="impostaRiflessoInput('${rif}')">
+            <label for="rif_${idx}">Riflessi ${rif}</label>
+          </div>
+        `;
+      });
+    }
+
+    function impostaRiflessoInput(val) {
+      document.getElementById('riflessiUnghia').value = `Riflessi ${val}`;
+    }
+
+    function salvaCategoriaCorrente() {
+      if (!categoriaAttivaCorrente) return;
+      const macro = categoriaAttivaCorrente;
+
+      document.querySelectorAll('.aroma-main-cb').forEach(cb => {
+        const uid = cb.id;
+        const aromaName = cb.value;
+        const intEl = document.querySelector(`input[name="int_${uid}"]:checked`);
+        const intensita = intEl ? intEl.value : '';
+
+        if (cb.checked) {
+          aromiConfermati = aromiConfermati.filter(item => item.nome !== aromaName);
+          aromiConfermati.push({ nome: aromaName, intensita: intensita, categoria: macro });
+        } else {
+          aromiConfermati = aromiConfermati.filter(item => item.nome !== aromaName);
+        }
+      });
+
+      const container = document.getElementById(`dynamicCustomContainer_${macro}`);
+      if(container) {
+        container.querySelectorAll('.custom-row').forEach((row) => {
+          const inp = row.querySelector('.custom-aroma-input');
+          if(inp && inp.value.trim() !== '') {
+            const valCustom = inp.value.trim();
+            const checkedRadio = row.querySelector('input[type="radio"]:checked');
+            const intensita = checkedRadio ? checkedRadio.value : '';
+
+            aromiConfermati = aromiConfermati.filter(item => item.nome !== valCustom);
+            aromiConfermati.push({ nome: valCustom, intensita: intensita, categoria: macro });
+          }
+        });
+      }
+
+      aggiornaRiepilogoAromi();
+      aggiornaRetrogustoCoerenteLista();
+    }
+
+    function aggiornaRuotaAromi() {
+      salvaCategoriaCorrente();
+      const visivo = document.querySelector('input[name="catColore"]:checked').value;
+      const effervescenza = parseInt(document.getElementById('termEffervescenza').value);
+
+      let ruotaUnita = {};
+      
+      if (visivo === 'rosso') {
+        Object.assign(ruotaUnita, ruotaViniRossi);
+      } else if (visivo === 'bianco') {
+        Object.assign(ruotaUnita, ruotaViniBianchi);
+      } else if (visivo === 'rosato') {
+        Object.assign(ruotaUnita, ruotaViniRossi, ruotaViniBianchi);
+      }
+
+      if (effervescenza > 0) {
+        Object.assign(ruotaUnita, ruotaSpumanti);
+      }
+
+      const macroContainer = document.getElementById('macroAromiContainer');
+      macroContainer.innerHTML = '';
+      document.getElementById('activeCategoryBox').innerHTML = '';
+      categoriaAttivaCorrente = null;
+
+      Object.keys(ruotaUnita).forEach((macro, mIdx) => {
+        macroContainer.innerHTML += `
+          <div class="chip">
+            <input type="radio" name="macroOlfatto" id="macro_${mIdx}" value="${macro}" onchange="cambiaCategoriaOlfattiva('${macro}')">
+            <label for="macro_${mIdx}">📁 ${macro}</label>
+          </div>
+        `;
+      });
+      window.currentRuotaAttiva = ruotaUnita;
+    }
+
+    function cambiaCategoriaOlfattiva(macro) {
+      salvaCategoriaCorrente();
+      categoriaAttivaCorrente = macro;
+      renderCategoriaAttiva(macro);
+    }
+
+    function renderCategoriaAttiva(macro) {
+      const ruotaUnita = window.currentRuotaAttiva;
+      const box = document.getElementById('activeCategoryBox');
+      const sottocategorie = ruotaUnita[macro];
+      
+      let htmlSub = `<div class="sub-section"><div class="sub-title">Categoria: ${macro}</div>`;
+      
+      Object.keys(sottocategorie).forEach((sotto, sIdx) => {
+        htmlSub += `<div style="margin-top:6px; font-weight:bold; font-size:0.85rem; color:var(--text-muted);">${sotto}:</div><div class="aroma-container">`;
+        sottocategorie[sotto].forEach((aroma, aIdx) => {
+          const uniqueId = `aroma_${macro}_${sotto}_${aIdx}`.replace(/[^a-zA-Z0-9]/g, '_');
+          
+          const giaSelezionato = aromiConfermati.find(a => a.nome === aroma);
+          const isCheckedAttr = giaSelezionato ? 'checked' : '';
+          const popupActive = giaSelezionato ? 'active' : '';
+          const intVal = giaSelezionato ? giaSelezionato.intensita : '';
+
+          htmlSub += `
+            <div class="aroma-pill-wrapper">
+              <div class="chip" style="display:inline-block;">
+                <input type="checkbox" class="aroma-main-cb" id="${uniqueId}" value="${aroma}" ${isCheckedAttr} onchange="toggleIntensityPopup('${uniqueId}'); salvaCategoriaCorrente();">
+                <label for="${uniqueId}">${aroma}</label>
+              </div>
+              <div id="popup_${uniqueId}" class="intensity-popup ${popupActive}">
+                <span style="font-size:0.75rem; color:#aaa;">Intensità:</span>
+                <input type="radio" name="int_${uniqueId}" id="int_l_${uniqueId}" value="lieve" ${intVal==='lieve'?'checked':''} onchange="salvaCategoriaCorrente()"><label for="int_l_${uniqueId}">Lieve</label>
+                <input type="radio" name="int_${uniqueId}" id="int_m_${uniqueId}" value="medio" ${intVal==='medio'?'checked':''} onchange="salvaCategoriaCorrente()"><label for="int_m_${uniqueId}">Medio</label>
+                <input type="radio" name="int_${uniqueId}" id="int_i_${uniqueId}" value="intenso" ${intVal==='intenso'?'checked':''} onchange="salvaCategoriaCorrente()"><label for="int_i_${uniqueId}">Intenso</label>
+              </div>
+            </div>
+          `;
+        });
+        htmlSub += `</div>`;
+      });
+
+      htmlSub += `
+        <div style="margin-top:12px; border-top:1px dashed #444; padding-top:8px;">
+          <div style="font-weight:bold; font-size:0.85rem; color:var(--accent); margin-bottom:4px;">Altro (Scrivi aroma e premi Invio o clicca fuori):</div>
+          <div id="dynamicCustomContainer_${macro}" style="display:flex; flex-direction:column; gap:6px;">
+            <div style="display:flex; gap:6px; align-items:center;" class="custom-row">
+              <input type="text" class="field-note active custom-aroma-input" placeholder="✍️ Scrivi aroma personalizzato..." onchange="salvaCategoriaCorrente(); checkDynamicCustomInputs('${macro}');" style="margin-top:0; flex:2;">
+              <div class="intensity-mini" style="display:flex; gap:2px; flex:1;">
+                <label style="font-size:0.7rem; padding:6px; background:#262626; border-radius:4px; border:1px solid #444; cursor:pointer; color:#aaa; text-align:center;"><input type="radio" name="cust_int_0_${macro}" value="lieve" style="display:none;" onchange="salvaCategoriaCorrente()"> Lieve</label>
+                <label style="font-size:0.7rem; padding:6px; background:#262626; border-radius:4px; border:1px solid #444; cursor:pointer; color:#aaa; text-align:center;"><input type="radio" name="cust_int_0_${macro}" value="medio" style="display:none;" onchange="salvaCategoriaCorrente()"> Medio</label>
+                <label style="font-size:0.7rem; padding:6px; background:#262626; border-radius:4px; border:1px solid #444; cursor:pointer; color:#aaa; text-align:center;"><input type="radio" name="cust_int_0_${macro}" value="intenso" style="display:none;" onchange="salvaCategoriaCorrente()"> Intenso</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      htmlSub += `</div>`;
+      box.innerHTML = htmlSub;
+    }
+
+    function toggleIntensityPopup(uniqueId) {
+      const cb = document.getElementById(uniqueId);
+      const popup = document.getElementById(`popup_${uniqueId}`);
+      if(cb.checked) popup.classList.add('active');
+      else popup.classList.remove('active');
+    }
+
+    let customRowIdx = 1;
+    function checkDynamicCustomInputs(macro) {
+      salvaCategoriaCorrente();
+      const container = document.getElementById(`dynamicCustomContainer_${macro}`);
+      const rows = container.querySelectorAll('.custom-row');
+      const lastRow = rows[rows.length - 1];
+      const input = lastRow.querySelector('.custom-aroma-input');
+
+      if(input.value.trim() !== '' && rows.length < 5) {
+        customRowIdx++;
+        const newDiv = document.createElement('div');
+        newDiv.style.cssText = "display:flex; gap:6px; align-items:center;";
+        newDiv.className = "custom-row";
+        newDiv.innerHTML = `
+          <input type="text" class="field-note active custom-aroma-input" placeholder="✍️ Scrivi altro aroma..." onchange="salvaCategoriaCorrente(); checkDynamicCustomInputs('${macro}');" style="margin-top:0; flex:2;">
+          <div class="intensity-mini" style="display:flex; gap:2px; flex:1;">
+            <label style="font-size:0.7rem; padding:6px; background:#262626; border-radius:4px; border:1px solid #444; cursor:pointer; color:#aaa; text-align:center;"><input type="radio" name="cust_int_${customRowIdx}_${macro}" value="lieve" style="display:none;" onchange="salvaCategoriaCorrente()"> Lieve</label>
+            <label style="font-size:0.7rem; padding:6px; background:#262626; border-radius:4px; border:1px solid #444; cursor:pointer; color:#aaa; text-align:center;"><input type="radio" name="cust_int_${customRowIdx}_${macro}" value="medio" style="display:none;" onchange="salvaCategoriaCorrente()"> Medio</label>
+            <label style="font-size:0.7rem; padding:6px; background:#262626; border-radius:4px; border:1px solid #444; cursor:pointer; color:#aaa; text-align:center;"><input type="radio" name="cust_int_${customRowIdx}_${macro}" value="intenso" style="display:none;" onchange="salvaCategoriaCorrente()"> Intenso</label>
+          </div>
+        `;
+        container.appendChild(newDiv);
+      }
+    }
+
+    document.addEventListener('click', function(e) {
+      if(e.target && e.target.tagName === 'LABEL' && e.target.closest('.intensity-mini') && e.target.querySelector('input')) {
+        const parentMini = e.target.closest('.intensity-mini');
+        parentMini.querySelectorAll('label').forEach(l => {
+          l.style.background = '#262626';
+          l.style.color = '#aaa';
+          l.style.fontWeight = 'normal';
+          l.style.borderColor = '#444';
+        });
+        e.target.style.background = 'var(--accent)';
+        e.target.style.color = '#000';
+        e.target.style.fontWeight = 'bold';
+        e.target.style.borderColor = 'var(--accent)';
+        e.target.querySelector('input').checked = true;
+        salvaCategoriaCorrente();
+      }
+    });
+
+    window.eliminaAromaRiepilogo = function(nomeAroma) {
+      aromiConfermati = aromiConfermati.filter(a => a.nome !== nomeAroma);
+      
+      document.querySelectorAll('.aroma-main-cb').forEach(cb => {
+        if(cb.value === nomeAroma) {
+          cb.checked = false;
+          toggleIntensityPopup(cb.id);
+        }
+      });
+
+      aggiornaRiepilogoAromi();
+      aggiornaRetrogustoCoerenteLista();
+    }
+
+    function aggiornaRiepilogoAromi() {
+      const container = document.getElementById('riepilogoAromi');
+      if(aromiConfermati.length > 0) {
+        let intensi = aromiConfermati.filter(a => a.intensita === 'intenso');
+        let medi = aromiConfermati.filter(a => a.intensita === 'medio');
+        let lievi = aromiConfermati.filter(a => a.intensita === 'lieve');
+        let senzaIntensita = aromiConfermati.filter(a => !a.intensita);
+
+        let parti = [];
+        if(intensi.length > 0) {
+          let listI = intensi.map(a => `${a.nome} <button type="button" class="del-aroma-btn" onclick="eliminaAromaRiepilogo('${a.nome}')">❌</button>`).join(', ');
+          parti.push(`🔴 <strong>Intensi:</strong> ${listI}`);
+        }
+        if(medi.length > 0) {
+          let listM = medi.map(a => `${a.nome} <button type="button" class="del-aroma-btn" onclick="eliminaAromaRiepilogo('${a.nome}')">❌</button>`).join(', ');
+          parti.push(`🟡 <strong>Medi:</strong> ${listM}`);
+        }
+        if(lievi.length > 0) {
+          let listL = lievi.map(a => `${a.nome} <button type="button" class="del-aroma-btn" onclick="eliminaAromaRiepilogo('${a.nome}')">❌</button>`).join(', ');
+          parti.push(`🔵 <strong>Lievi:</strong> ${listL}`);
+        }
+        if(senzaIntensita.length > 0) {
+          let listS = senzaIntensita.map(a => `${a.nome} <button type="button" class="del-aroma-btn" onclick="eliminaAromaRiepilogo('${a.nome}')">❌</button>`).join(', ');
+          parti.push(`⚪ <strong>Rilevati:</strong> ${listS}`);
+        }
+
+        container.innerHTML = `
+          <div class="riepilogo-cardinale">
+            <strong>Riepilogo Aromi Rilevati (Eliminabili con ❌):</strong><br>${parti.join('<br>')}
+          </div>
+        `;
+      } else {
+        container.innerHTML = '';
+      }
+    }
+
+    function generaNarrativaFluida() {
+      let aromiDesc = "profilo olfattivo pulito e lineare";
+      if(aromiConfermati.length > 0) {
+        let intensi = aromiConfermati.filter(a => a.intensita === 'intenso').map(a => a.nome);
+        let medi = aromiConfermati.filter(a => a.intensita === 'medio').map(a => a.nome);
+        let lievi = aromiConfermati.filter(a => a.intensita === 'lieve').map(a => a.nome);
+
+        let frasiAromi = [];
+        if(intensi.length > 0) frasiAromi.push(`note intense e decise di ${intensi.join(', ')}`);
+        if(medi.length > 0) frasiAromi.push(`profumi nitidi di ${medi.join(', ')}`);
+        if(lievi.length > 0) frasiAromi.push(`sfumature delicate di ${lievi.join(', ')}`);
+        aromiDesc = `un corredo olfattivo caratterizzato da ${frasiAromi.join(" e da ")}`;
+      }
+
+      const corpoVal = parseInt(document.getElementById('termCorpo').value) || 5;
+      let descCorpo = "di medio corpo";
+      if(corpoVal <= 3) descCorpo = "snello e leggero";
+      else if(corpoVal >= 8) descCorpo = "di grande struttura e potenza";
+
+      const aciditaVal = parseInt(document.getElementById('termAcidita').value) || 5;
+      let descAcidita = "fresco ed equilibrato";
+      if(aciditaVal >= 7) descAcidita = "sorretto da una vibrante acidità che ne allunga la beva";
+      else if(aciditaVal <= 3) descAcidita = "morbido e rotondo al palato";
+
+      const voto = document.getElementById('votoFinale').value;
+
+      return `All'esame organolettico il vino si presenta con ${aromiDesc}. In bocca rivela un sorso ${descCorpo}, ${descAcidita}, con una notevole coerenza gusto-olfattiva e un finale persistente. Un'espressione di notevole pregio valutata ${voto}/10.`;
+    }
+
+    function getRadioVal(name) {
+      const el = document.querySelector(`input[name="${name}"]:checked`);
+      return el ? el.value : '';
+    }
+
+    function salvaDegustazione() {
+      salvaCategoriaCorrente();
+      const editIdx = parseInt(document.getElementById('editIndex').value);
+      const nome = document.getElementById('nomeVino').value || 'Vino Senza Nome';
+      const cantina = document.getElementById('cantina').value || 'Cantina Sconosciuta';
+      const zona = document.getElementById('zonaVino').value || '-';
+      
+      const rawData = document.getElementById('dataDegustazione').value;
+      let dataFormattata = new Date().toLocaleDateString('it-IT');
+      if (rawData) {
+        const p = rawData.split('-');
+        dataFormattata = `${p[2]}/${p[1]}/${p[0]}`;
+      }
+
+      const tipoVitigno = getRadioVal('tipoVitigno');
+      const vitignoVal = document.getElementById('vitigno').value;
+      const blendDettaglio = document.getElementById('blendDettaglio').value;
+      const infoVitigno = tipoVitigno === 'Blend' ? `${vitignoVal} (Blend: ${blendDettaglio})` : `${vitignoVal} (Monovarietale)`;
+
+      const tipoRG = getRadioVal('tipoRetrogusto');
+      let retrogustoFinale = '';
+      if(tipoRG === 'Coerente') {
+        let elencoAromi = aromiConfermati.map(a => `${a.nome}`).join(', ');
+        let altroCoerenteVals = [];
+        document.querySelectorAll('.retro-altro-input').forEach(inp => {
+          if(inp.value.trim() !== '') altroCoerenteVals.push(inp.value.trim());
+        });
+        
+        retrogustoFinale = `Coerente (${elencoAromi})`;
+        if(altroCoerenteVals.length > 0) {
+          retrogustoFinale += ` + Altro: ${altroCoerenteVals.join(', ')}`;
+        }
+      } else {
+        let incoerenteVals = [];
+        document.querySelectorAll('.incoerente-input').forEach(inp => {
+          if(inp.value.trim() !== '') incoerenteVals.push(inp.value.trim());
+        });
+        retrogustoFinale = `Incoerente: ${incoerenteVals.join(', ') || 'Nessuna nota'}`;
+      }
+
+      const narrativa = generaNarrativaFluida();
+
+      const scheda = {
+        id: editIdx !== -1 ? JSON.parse(localStorage.getItem('diarioVini'))[editIdx].id : Date.now(),
+        data: dataFormattata,
+        nome: nome,
+        cantina: cantina,
+        zona: zona,
+        tipoVisivo: getRadioVal('catColore'),
+        annata: document.getElementById('annata').value,
+        vitignoInfo: infoVitigno,
+        colore: getRadioVal('coloreScelto'),
+        unghia: document.getElementById('riflessiUnghia').value,
+        noteUnghia: document.getElementById('note_unghia').value,
+        consistenza: getRadioVal('consistenza'),
+        qtaConsistenza: document.getElementById('termConsistenza').value,
+        qtaEffervescenza: document.getElementById('termEffervescenza').value,
+        dimBolla: document.getElementById('dimBolla') ? getRadioVal('dimBolla') : '',
+        numBolla: document.getElementById('numBolla') ? getRadioVal('numBolla') : '',
+        perBolla: document.getElementById('perBolla') ? getRadioVal('perBolla') : '',
+        palatoBolla: getRadioVal('palatoBolla'),
+        intensitaOlfattivaVal: document.getElementById('termIntensitaOlfattiva').value,
+        aromiDettaglio: aromiConfermati,
+        narrativaOlfatto: narrativa,
+        dolcezza: document.getElementById('termDolcezza').value,
+        acidita: document.getElementById('termAcidita').value,
+        sapidita: document.getElementById('termSapidita').value,
+        alcol: document.getElementById('termAlcol').value,
+        tannino: document.getElementById('termTannino').value,
+        amaro: document.getElementById('termAmaro').value,
+        corpoVal: document.getElementById('termCorpo').value,
+        persistenzaVal: document.getElementById('termPersistenza').value,
+        retrogusto: retrogustoFinale,
+        equilibrio: getRadioVal('equilibrio'),
+        stato: getRadioVal('stato'),
+        voto: document.getElementById('votoFinale').value,
+        abbinamento: document.getElementById('note_abbinamento').value,
+        noteColore: document.getElementById('note_colore').value,
+        foto: photoData
+      };
+
+      let archivio = JSON.parse(localStorage.getItem('diarioVini') || '[]');
+      if (editIdx !== -1) {
+        archivio[editIdx] = scheda;
+        document.getElementById('editIndex').value = -1;
+        alert('✅ Scheda aggiornata con successo!');
+      } else {
+        archivio.unshift(scheda);
+        alert('✅ Degustazione salvata nel Diario!');
+      }
+
+      localStorage.setItem('diarioVini', JSON.stringify(archivio));
+      aggiornaConteggio();
+      switchTab('archivio');
+    }
+
+    function salvaInGoogleDrive() {
+      let archivio = localStorage.getItem('diarioVini') || '[]';
+      let blob = new Blob([archivio], {type: "application/json"});
+      let filename = `backup_diario_vini_${new Date().toISOString().slice(0,10)}.json`;
+
+      if (navigator.canShare && navigator.canShare({ files: [new File([blob], filename, {type: "application/json"})] })) {
+        let file = new File([blob], filename, {type: "application/json"});
+        navigator.share({
+          files: [file],
+          title: 'Backup Diario di Degustazione',
+          text: 'Salva il file di backup direttamente in Google Drive'
+        }).catch(() => {});
+      } else {
+        let url = URL.createObjectURL(blob);
+        let a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        alert('☁️ File di Backup pronto! Salvalo o caricalo nella tua cartella Google Drive per sincronizzarlo.');
+      }
+    }
+
+    function importaBackupCloud(event) {
+      let file = event.target.files[0];
+      if(!file) return;
+      let reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          let datiImportati = JSON.parse(e.target.result);
+          if(Array.isArray(datiImportati)) {
+            localStorage.setItem('diarioVini', JSON.stringify(datiImportati));
+            aggiornaConteggio();
+            caricaArchivio();
+            alert('✅ Backup importato con successo! I dati sono sincronizzati.');
+          } else {
+            alert('❌ Il file non è valido.');
+          }
+        } catch(err) {
+          alert('❌ Errore durante la lettura del file.');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function modificaScheda(index) {
+      let archivio = JSON.parse(localStorage.getItem('diarioVini') || '[]');
+      let item = archivio[index];
+      if(!item) return;
+
+      document.getElementById('editIndex').value = index;
+      document.getElementById('nomeVino').value = item.nome || '';
+      document.getElementById('cantina').value = item.cantina || '';
+      document.getElementById('zonaVino').value = item.zona || '';
+      document.getElementById('annata').value = item.annata || '';
+      document.getElementById('riflessiUnghia').value = item.unghia || '';
+      
+      aromiConfermati = item.aromiDettaglio || [];
+      
+      setSliderVal('termVisivo', parseInt(item.qtaConsistenza || 7), 'qb_visivo');
+      setSliderVal('termConsistenza', parseInt(item.qtaConsistenza || 5), 'qb_consistenza');
+      setSliderVal('termEffervescenza', parseInt(item.qtaEffervescenza || 0), 'qb_effervescenza');
+      setSliderVal('termIntensitaOlfattiva', parseInt(item.intensitaOlfattivaVal || 5), 'qb_intOlf');
+      setSliderVal('termDolcezza', parseInt(item.dolcezza || 2), 'qb_dolcezza');
+      setSliderVal('termAcidita', parseInt(item.acidita || 6), 'qb_acidita');
+      setSliderVal('termSapidita', parseInt(item.sapidita || 5), 'qb_sapidita');
+      setSliderVal('termAlcol', parseInt(item.alcol || 6), 'qb_alcol');
+      setSliderVal('termTannino', parseInt(item.tannino || 5), 'qb_tannino');
+      setSliderVal('termAmaro', parseInt(item.amaro || 0), 'qb_amaro');
+      setSliderVal('termPersistenza', parseInt(item.persistenzaVal || 5), 'qb_pers');
+      setSliderVal('termCorpo', parseInt(item.corpoVal || 5), 'qb_corpo');
+      setSliderVal('votoFinale', parseInt(item.voto || 8), 'qb_voto');
+      
+      document.getElementById('note_abbinamento').value = item.abbinamento || '';
+      document.getElementById('note_colore').value = item.noteColore || '';
+      
+      if(item.foto) {
+        photoData = item.foto;
+        const img = document.getElementById('fotoPreview');
+        img.src = photoData;
+        img.style.display = 'block';
+      }
+
+      switchTab('nuova');
+      aggiornaRiepilogoAromi();
+      aggiornaRuotaAromi();
+    }
+
+    function eliminaSchedaConferma(index) {
+      if(confirm("⚠️ Sei sicuro di voler eliminare definitivamente questa scheda di degustazione? L'operazione non è reversibile.")) {
+        let archivio = JSON.parse(localStorage.getItem('diarioVini') || '[]');
+        archivio.splice(index, 1);
+        localStorage.setItem('diarioVini', JSON.stringify(archivio));
+        aggiornaConteggio();
+        caricaArchivio();
+      }
+    }
+
+    function esportaPDF() {
+      window.print();
+    }
+
+    function condividiScheda() {
+      const nome = document.getElementById('nomeVino').value || 'Vino';
+      const cantina = document.getElementById('cantina').value || 'Cantina';
+      const voto = document.getElementById('votoFinale').value;
+      const testo = `🍷 Degustazione ${nome} (${cantina}) - Voto: ${voto}/10.`;
+      
+      if (navigator.share) {
+        navigator.share({ title: 'Degustazione Vino', text: testo }).catch(() => {});
+      } else {
+        navigator.clipboard.writeText(testo);
+        alert('📋 Sintesi copiata negli appunti!');
+      }
+    }
+
+    function caricaArchivio() {
+      let archivio = JSON.parse(localStorage.getItem('diarioVini') || '[]');
+      const container = document.getElementById('listaDegustazioni');
+      const query = (document.getElementById('searchArchivio') ? document.getElementById('searchArchivio').value : '').toLowerCase().trim();
+      
+      if(archivio.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:#888; padding:20px;">Nessuna degustazione salvata.</p>';
+        return;
+      }
+
+      let filtrati = archivio.map((item, originalIndex) => ({item, originalIndex})).filter(({item}) => {
+        if(!query) return true;
+        const stringaUnivoca = `${item.nome} ${item.cantina} ${item.zona} ${item.vitignoInfo} ${item.tipoVisivo} ${item.data}`.toLowerCase();
+        return stringaUnivoca.includes(query);
+      });
+
+      if(filtrati.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:#888; padding:20px;">Nessun vino trovato con questo criterio.</p>';
+        return;
+      }
+
+      container.innerHTML = '';
+      filtrati.forEach(({item, originalIndex}) => {
+        let intensi = item.aromiDettaglio ? item.aromiDettaglio.filter(a => a.intensita === 'intenso').map(a => a.nome) : [];
+        let medi = item.aromiDettaglio ? item.aromiDettaglio.filter(a => a.intensita === 'medio').map(a => a.nome) : [];
+        let lievi = item.aromiDettaglio ? item.aromiDettaglio.filter(a => a.intensita === 'lieve').map(a => a.nome) : [];
+        let generici = item.aromiDettaglio ? item.aromiDettaglio.filter(a => !a.intensita).map(a => a.nome) : [];
+
+        let aromiHTML = '';
+        if(intensi.length > 0) aromiHTML += `<p>🔴 <strong>Intensi:</strong> ${intensi.join(', ')}</p>`;
+        if(medi.length > 0) aromiHTML += `<p>🟡 <strong>Medi:</strong> ${medi.join(', ')}</p>`;
+        if(lievi.length > 0) aromiHTML += `<p>🔵 <strong>Lievi:</strong> ${lievi.join(', ')}</p>`;
+        if(generici.length > 0) aromiHTML += `<p>⚪ <strong>Rilevati:</strong> ${generici.join(', ')}</p>`;
+
+        container.innerHTML += `
+          <div class="wine-item">
+            <div class="wine-header">
+              <div class="wine-info">
+                <h3>${item.nome} (${item.voto}/10)</h3>
+                <p>📅 Degustato il: <strong>${item.data || '-'}</strong></p>
+                <p>🍷 <strong>${item.cantina}</strong> | Visivo: ${item.tipoVisivo ? item.tipoVisivo.toUpperCase() : '-'}</p>
+                <p>📍 Zona: <strong>${item.zona || '-'}</strong> | 📅 Annata: ${item.annata || '-'} | 🍇 ${item.vitignoInfo || '-'}</p>
+              </div>
+              ${item.foto ? `<img src="${item.foto}" style="width:65px; height:65px; object-fit:cover; border-radius:6px; border:1px solid #d4af37;">` : ''}
+            </div>
+            <div class="wine-details">
+              ${item.colore ? `<p><strong>Colore:</strong> ${item.colore}</p>` : ''}
+              ${item.unghia ? `<p><strong>Riflessi Unghia:</strong> ${item.unghia}</p>` : ''}
+              ${item.noteColore ? `<p class="archived-note"><strong>Nota Colore:</strong> ${item.noteColore}</p>` : ''}
+              
+              <div style="margin-top:6px; border-top:1px solid #2a2a2a; padding-top:6px;">
+                <p><strong>INTENSITÀ OLFATTIVA:</strong> ${item.intensitaOlfattivaVal}/10</p>
+                <p><strong>GUSTO:</strong> Dolcezza: ${item.dolcezza}/10 | Acidità: ${item.acidita}/10 | Sapidità: ${item.sapidita}/10 | Alcol: ${item.alcol}/10 | Tannino: ${item.tannino}/10 | Amaro: ${item.amaro}/10</p>
+                <p><strong>Corpo:</strong> ${item.corpoVal}/10 | <strong>Persistenza:</strong> ${item.persistenzaVal}/10</p>
+                <p><strong>Retrogusto:</strong> ${item.retrogusto || '-'}</p>
+                <p><strong>Equilibrio:</strong> ${item.equilibrio || '-'} | <strong>Stato:</strong> ${item.stato || '-'}</p>
+              </div>
+
+              <div style="margin-top:6px; border-top:1px solid #2a2a2a; padding-top:6px;">
+                <strong>Aromi per Intensità:</strong>
+                ${aromiHTML || '<p>-</p>'}
+              </div>
+
+              ${item.narrativaOlfatto ? `<div class="narrative-box">“${item.narrativaOlfatto}”</div>` : ''}
+              ${item.abbinamento ? `<p style="margin-top:6px;"><strong>🍽️ Abbinamento:</strong> ${item.abbinamento}</p>` : ''}
+
+              <!-- Tasti Modifica ed Elimina con doppia conferma -->
+              <div class="actions-archive">
+                <button class="btn btn-secondary" onclick="modificaScheda(${originalIndex})">✏️ Modifica</button>
+                <button class="btn btn-danger" onclick="eliminaSchedaConferma(${originalIndex})">🗑️ Elimina</button>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function aggiornaConteggio() {
+      let archivio = JSON.parse(localStorage.getItem('diarioVini') || '[]');
+      document.getElementById('count').innerText = archivio.length;
+    }
+
+    window.onload = function() {
+      document.getElementById('dataDegustazione').valueAsDate = new Date();
+      renderColoreScelto();
+      checkEffervescenzaDettagli();
+      aggiornaRuotaAromi();
+      calcolaCorpoAutomatico();
+      aggiornaConteggio();
+    };
+  </script>
+</body>
+</html>
